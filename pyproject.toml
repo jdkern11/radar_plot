@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pinrex.radar_plot"
+version = "0.1.0"
+description = ""
+authors = ["jdkern11 <leolion29@gmail.com>"]
+readme = "README.md"
+packages = [{include = "pinrex"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+pandas = "^1.4.4"
+psycopg2-binary = "^2.9.3"
+pinrex-db-models = {git = "ssh://git@github.com/jdkern11/pinrex_db_models", rev = "v0.4.0"}
+matplotlib = "^3.6.3"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.5.0"
+pytest = "^7.2.0"
+black = "^22.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
