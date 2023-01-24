@@ -259,7 +259,7 @@ def plot(
             curr_color += 1
 
     ax.set_rmax(1)
-    ax.set_rticks(ticks=[0.25, 0.75], labels=[])
+    ax.set_rticks(ticks=[0.25, 0.5, 0.75], labels=[])
     ax.grid(True)
     labels = [plot_labels[label] for label in label_order]
     label_angles = [angles[label] * 180 / np.pi for label in label_order]
