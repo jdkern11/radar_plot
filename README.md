@@ -49,6 +49,39 @@ plt.show()
 Resulting in the following image
 ![example 1 plotted](images/example_1.png)
 
+Additional lines are plotted at the .25, .50, and .75 marks on the image. The value at the
+.25 and .75 line for each property is labeled and values increase/decrease linearly
+between these points. For instance, the 0.5 mark for property 2 would be 4, the 1 
+mark would be 6 and the 0 mark would be 2.
+
+Let's say you don't like that the properties don't range from 0 to some value. To change
+these value ranges create a dictionary of the ranges you want for each property.
+For instance: 
+```Python
+import pandas as pd
+import matplotlib.pyplot as plt
+from pinrex import radar_plot
+
+value_ranges = {
+  "prop1": [0, 20],
+  "prop2": [0, 5],
+  "prop3": [0, 50],
+}
+
+# see tables above
+df = pd.read_csv('example_data.csv')
+fig, ax = radar_plot.plot(
+    df,
+    label_column="property",
+    value_column="value",
+    hue_column="item",
+    value_ranges=value_ranges,
+)
+plt.show()
+```
+Resulting in the following image
+![example 2 plotted](images/example_2.png)
+
 ## Usage
 ```Python
 import pandas as pd
