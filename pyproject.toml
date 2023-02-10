@@ -5,6 +5,7 @@ description = ""
 authors = ["jdkern11 <josephdanielkern@gmail.com>"]
 readme = "README.md"
 packages = [{include = "radarplt"}]
+repository = "https://github.com/jdkern11/radar_plot.git"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
