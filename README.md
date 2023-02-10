@@ -2,6 +2,11 @@
 This package creates radar plots. It can generate typical radar plots and 
 plot ranges of values.
 
+- [Basic usage](#basic-usage)
+- [Chaning ranges](#changing-ranges)
+- [Chaning labels](#changing-labels)
+- [Plotting target ranges](#plotting-target-ranges)
+
 ## Data formatting
 Data you want to plot must have a tidy format. For instance, if I wanted to plot
 three properties (let's say prop1, prop2, and prop3 with values 
@@ -34,16 +39,18 @@ Following [that formatting scheme](#data-formatting), you can plot the data as f
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 # see tables above
 df = pd.read_csv('example_data.csv')
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",
     hue_column="item",
 )
+legend = ax.legend(loc=(0.9, 0.95))
+plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
@@ -62,7 +69,7 @@ For instance:
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 value_ranges = {
   "prop1": [0, 20],
@@ -72,13 +79,15 @@ value_ranges = {
 
 # see tables above
 df = pd.read_csv('example_data.csv')
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",
     hue_column="item",
     value_ranges=value_ranges,
 )
+legend = ax.legend(loc=(0.9, 0.95))
+plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
@@ -91,7 +100,7 @@ you can change those as well with the `plot_labels` parameter.
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 value_ranges = {
   "prop1": [0, 20],
@@ -107,7 +116,7 @@ plot_labels = {
 
 # see tables above
 df = pd.read_csv('example_data.csv')
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",
@@ -115,18 +124,20 @@ fig, ax = radar_plot.plot(
     value_ranges=value_ranges,
     plot_labels=plot_labels,
 )
+legend = ax.legend(loc=(0.9, 0.95))
+plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
 ![example 3 plotted](images/example_3.png)
 
-### Plotting property ranges
+### Plotting target ranges
 If you want to see if your items' values fall within a certain range, you 
 can add those ranges as well
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 target_ranges = {
   "prop1": [10, 20],
@@ -148,7 +159,7 @@ plot_labels = {
 
 # see tables above
 df = pd.read_csv('example_data.csv')
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",
@@ -156,7 +167,8 @@ fig, ax = radar_plot.plot(
     value_ranges=value_ranges,
     plot_labels=plot_labels,
 )
-plt.legend()
+legend = ax.legend(loc=(0.9, 0.95))
+plt.tight_layout()
 plt.show()
 ```
 

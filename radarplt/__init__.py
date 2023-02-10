@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
-from pinrex.radar_plot.factory import radar_factory
-from pinrex.radar_plot.helpers import minmax_scale
+from radarplt.factory import radar_factory
+from radarplt.helpers import minmax_scale
 
 logger = logging.getLogger(__name__)
 

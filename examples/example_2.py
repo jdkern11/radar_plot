@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 value_ranges = {
     "prop1": [0, 20],
@@ -12,7 +12,7 @@ value_ranges = {
 
 # see tables above
 df = pd.read_csv("example_data.csv")
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",

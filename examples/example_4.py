@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from pinrex import radar_plot
+import radarplt
 
 target_ranges = {"prop1": [10, 20], "prop2": [0, 2], "prop3": [25, 35]}
 
@@ -16,7 +16,7 @@ plot_labels = {"prop1": "$\sigma^{2}$", "prop2": "Property 2 (seconds)", "prop3"
 
 # see tables above
 df = pd.read_csv("example_data.csv")
-fig, ax = radar_plot.plot(
+fig, ax = radarplt.plot(
     df,
     label_column="property",
     value_column="value",

@@ -1,16 +1,14 @@
 [tool.poetry]
-name = "pinrex.radar_plot"
+name = "radarplt"
 version = "1.0.0"
 description = ""
-authors = ["jdkern11 <leolion29@gmail.com>"]
+authors = ["jdkern11 <josephdanielkern@gmail.com>"]
 readme = "README.md"
-packages = [{include = "pinrex"}]
+packages = [{include = "radarplt"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 pandas = "^1.4.4"
-psycopg2-binary = "^2.9.3"
-pinrex-db-models = {git = "ssh://git@github.com/jdkern11/pinrex_db_models", rev = "v0.4.0"}
 matplotlib = "^3.6.3"
 
 [tool.poetry.group.dev.dependencies]
