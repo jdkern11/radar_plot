@@ -47,7 +47,7 @@ fig, ax = radar_plot.plot(
 plt.show()
 ```
 Resulting in the following image
-[example 1 plotted](images/example_1.png)
+![example 1 plotted](images/example_1.png)
 
 ## Usage
 ```Python
