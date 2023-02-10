@@ -6,3 +6,4 @@ data/*.png
 **/*.csv
 **/*.pkl
 data/
+**/._*.png
