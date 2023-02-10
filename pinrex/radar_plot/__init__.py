@@ -137,13 +137,13 @@ class RadarPlot:
                 if tdf[self.value_column].min() < value_ranges[label][0]:
                     warning = (
                         f"Value range min ({value_ranges[label][0]}) for "
-                        + f"{label} larger than min ({tdf[value_column].min()}) for the df"
+                        + f"{label} larger than min ({tdf[self.value_column].min()}) for the df"
                     )
                     logger.warning(warning)
                 if tdf[self.value_column].max() > value_ranges[label][1]:
                     warning = (
                         f"Value range max ({value_ranges[label][1]}) for "
-                        + f"{label} less than max ({tdf[value_column].min()}) for the df"
+                        + f"{label} less than max ({tdf[self.value_column].min()}) for the df"
                     )
                     logger.warning(warning)
         # ignore extra labels passed to plot_labels, but not in the dataframe
