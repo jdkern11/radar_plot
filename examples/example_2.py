@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 from pinrex import radar_plot
 
 value_ranges = {
-  "prop1": [0, 20],
-  "prop2": [0, 5],
-  "prop3": [0, 50],
+    "prop1": [0, 20],
+    "prop2": [0, 5],
+    "prop3": [0, 50],
 }
 
 # see tables above
-df = pd.read_csv('example_data.csv')
+df = pd.read_csv("example_data.csv")
 fig, ax = radar_plot.plot(
     df,
     label_column="property",
@@ -20,7 +20,7 @@ fig, ax = radar_plot.plot(
     value_ranges=value_ranges,
 )
 
-folder = Path.cwd() / '..' / 'images'
-save = str(folder / 'example_2.png')
+folder = Path.cwd() / ".." / "images"
+save = str(folder / "example_2.png")
+legend = ax.legend(loc=(0.9, 0.95))
 plt.savefig(save)
-

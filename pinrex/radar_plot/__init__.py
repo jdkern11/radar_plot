@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Dict, List, Optional, Tuple, Union
 import logging
 import copy
@@ -7,105 +8,239 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
-from matplotlib.patches import Circle, RegularPolygon
-from matplotlib.path import Path
-from matplotlib.projections.polar import PolarAxes
-from matplotlib.projections import register_projection
-from matplotlib.spines import Spine
-from matplotlib.transforms import Affine2D
+
+from pinrex.radar_plot.factory import radar_factory
+from pinrex.radar_plot.helpers import minmax_scale
 
 logger = logging.getLogger(__name__)
 
 
-def radar_factory(num_vars, frame="circle"):
-    """
-    Create a radar chart with `num_vars` axes.
+class RadarPlot:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        label_column: str,
+        value_column: str,
+        hue_column: Optional[str] = None,
+        value_ranges: Optional[Dict[str, List[float]]] = {},
+        plot_labels: Optional[Dict[str, str]] = {},
+        target_ranges: Optional[Dict[str, List[float]]] = {},
+        colors: Optional[List[str]] = [
+            "#332288",
+            "#117733",
+            "#44AA99",
+            "#88CCEE",
+            "#DDCC77",
+            "#CC6677",
+            "#AA4499",
+            "#882255",
+        ],
+    ):
+        """Creates radar plot from data in df
 
-    This function creates a RadarAxes projection and registers it.
+        Args:
+            df:
+                Dataframe contianing data to plot.
+            label_column:
+                Column in df corresponding to labels to plot
+            value_column:
+                Column in df corresponding to values to plot
+            hue_column:
+                Column in df corresponding to different objects that should be plotted
+                on separate lines.
+            value_ranges:
+                Optional, if set, then values in value column corresponding to
+                the appropriate label will be normalized to fall between 0 and 1, with
+                0 being prop_ranges[prop][0] and 1 being prop_ranges[prop][1]. If it falls
+                outside those ranges, a warning will be raised. If not passed, or it
+                is missing for a specific label, then the min and max for the dataframe
+                will be used.
+            plot_labels:
+                Optional, if passed, labels on the plot will be the value of the dictionary.
+                If not passed or set for some label, then the label will be whatever it
+                already is.
+            target_ranges:
+                Optional, if set, then target ranges will be added to the plot for each
+                property it is defined for.
+            colors:
+                Colors to plot each item.
+        """
+        self.df = df.copy()
+        self.label_column = label_column
+        self.value_column = value_column
+        self.hue_column = hue_column
+        self.target_ranges = self._add_missing_target_ranges(target_ranges)
+        self.plot_labels = self._add_missing_plot_labels(plot_labels)
+        self.value_ranges = self._add_missing_value_ranges(value_ranges)
+        self.colors = colors
+        self.theta = radar_factory(len(self.ordered_labels), frame="polygon")
+        self._add_scaled_value_column_to_df()
+        self.scaled_target_ranges = self._scale_target_ranges()
 
-    Parameters
-    ----------
-    num_vars : int
-        Number of variables for radar chart.
-    frame : {'circle', 'polygon'}
-        Shape of frame surrounding axes.
+    @cached_property
+    def ordered_labels(self):
+        self._ordered_labels = list(self.plot_labels.keys())
+        self._ordered_labels.sort()
+        angles = {
+            self._ordered_labels[i]: i * 2 * np.pi / len(self.plot_labels)
+            for i in range(len(self.plot_labels))
+        }
+        return self._ordered_labels
 
-    """
-    # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
+    @cached_property
+    def angles(self):
+        self._angles = {
+            self.ordered_labels[i]: i * 2 * np.pi / len(self.plot_labels)
+            for i in range(len(self.plot_labels))
+        }
+        return self._angles
 
-    class RadarTransform(PolarAxes.PolarTransform):
-        def transform_path_non_affine(self, path):
-            # Paths with non-unit interpolation steps correspond to gridlines,
-            # in which case we force interpolation (to defeat PolarTransform's
-            # autoconversion to circular arcs).
-            if path._interpolation_steps > 1:
-                path = path.interpolated(num_vars)
-            return Path(self.transform(path.vertices), path.codes)
+    def _add_missing_target_ranges(
+        self, target_ranges: Dict[str, List[float]]
+    ) -> Dict[str, List[float]]:
+        self.unique_labels = list(
+            set(list(self.df[self.label_column].unique()) + list(target_ranges.keys()))
+        )
+        if len(target_ranges) != 0:
+            for label in self.unique_labels:
+                if label not in target_ranges:
+                    target_ranges[label] = [0, 0]
+        return target_ranges
 
-    class RadarAxes(PolarAxes):
+    def _add_missing_plot_labels(self, plot_labels: Dict[str, str]) -> Dict[str, str]:
+        """Adds any missing labels from df to plot_labels"""
+        plot_labels = copy.deepcopy(plot_labels)
+        for label in self.unique_labels:
+            if label not in plot_labels:
+                plot_labels[label] = label
+        # ignore extra labels passed to plot_labels, but not in the dataframe
+        return {label: plot_labels[label] for label in self.unique_labels}
 
-        name = "radar"
-        PolarTransform = RadarTransform
+    def _add_missing_value_ranges(
+        self,
+        value_ranges: Dict[str, List[float]],
+    ) -> Dict[str, List[float]]:
+        """Adds min/max property value_ranges
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            # rotate plot such that the first axis is at the top
-            self.set_theta_zero_location("N")
-
-        def fill(self, *args, closed=True, **kwargs):
-            """Override fill so that line is closed by default"""
-            return super().fill(closed=closed, *args, **kwargs)
-
-        def plot(self, *args, **kwargs):
-            """Override plot so that line is closed by default"""
-            lines = super().plot(*args, **kwargs)
-            for line in lines:
-                self._close_line(line)
-
-        def _close_line(self, line):
-            x, y = line.get_data()
-            # FIXME: markers at x[0], y[0] get doubled-up
-            if x[0] != x[-1]:
-                x = np.append(x, x[0])
-                y = np.append(y, y[0])
-                line.set_data(x, y)
-
-        def set_varlabels(self, labels):
-            self.set_thetagrids(np.degrees(theta), labels)
-
-        def _gen_axes_patch(self):
-            # The Axes patch must be centered at (0.5, 0.5) and of radius 0.5
-            # in axes coordinates.
-            if frame == "circle":
-                return Circle((0.5, 0.5), 0.5)
-            elif frame == "polygon":
-                return RegularPolygon((0.5, 0.5), num_vars, radius=0.5, edgecolor="k")
+        Gives warning if value ranges lower than max or higher than min in the
+        dataframe.
+        """
+        value_ranges = copy.deepcopy(value_ranges)
+        for label in self.unique_labels:
+            tdf = self.df.loc[self.df[self.label_column] == label]
+            if label not in value_ranges:
+                value_ranges[label] = [
+                    tdf[self.value_column].min(),
+                    tdf[self.value_column].max(),
+                ]
             else:
-                raise ValueError("Unknown value for 'frame': %s" % frame)
+                if tdf[self.value_column].min() < value_ranges[label][0]:
+                    warning = (
+                        f"Value range min ({value_ranges[label][0]}) for "
+                        + f"{label} larger than min ({tdf[value_column].min()}) for the df"
+                    )
+                    logger.warning(warning)
+                if tdf[self.value_column].max() > value_ranges[label][1]:
+                    warning = (
+                        f"Value range max ({value_ranges[label][1]}) for "
+                        + f"{label} less than max ({tdf[value_column].min()}) for the df"
+                    )
+                    logger.warning(warning)
+        # ignore extra labels passed to plot_labels, but not in the dataframe
+        return {label: value_ranges[label] for label in self.unique_labels}
 
-        def _gen_axes_spines(self):
-            if frame == "circle":
-                return super()._gen_axes_spines()
-            elif frame == "polygon":
-                # spine_type must be 'left'/'right'/'top'/'bottom'/'circle'.
-                spine = Spine(
-                    axes=self,
-                    spine_type="circle",
-                    path=Path.unit_regular_polygon(num_vars),
+    def _add_scaled_value_column_to_df(self) -> pd.DataFrame:
+        """Scales value column in df for each property based on value_ranges"""
+        scaled_values = []
+        for index, row in self.df.iterrows():
+            scaled_values.append(
+                minmax_scale(
+                    row[self.value_column], self.value_ranges[row[self.label_column]]
                 )
-                # unit_regular_polygon gives a polygon of radius 1 centered at
-                # (0, 0) but we want a polygon of radius 0.5 centered at (0.5,
-                # 0.5) in axes coordinates.
-                spine.set_transform(
-                    Affine2D().scale(0.5).translate(0.5, 0.5) + self.transAxes
+            )
+        self.df[f"_scaled_{self.value_column}"] = scaled_values
+
+    def _scale_target_ranges(self) -> Dict[str, List[float]]:
+        scaled_ranges = {}
+        for key, value in self.target_ranges.items():
+            scaled_ranges[key] = [
+                minmax_scale(value[0], self.value_ranges[key]),
+                minmax_scale(value[1], self.value_ranges[key]),
+            ]
+        return scaled_ranges
+
+    def plot(self) -> Tuple[Figure, Union[List[Axes], Axes]]:
+        fig, ax = plt.subplots(subplot_kw=dict(projection="radar"), dpi=300)
+        self._plot_target_ranges(ax)
+        self._plot_df(ax)
+        self._add_tick_labels(ax)
+
+        return (fig, ax)
+
+    def _plot_target_ranges(self, ax):
+        if len(self.target_ranges) == 0:
+            return
+        first = True  # only want to plot label with first target
+        for label in self.ordered_labels:
+            if first:
+                ax.plot(
+                    [self.angles[label], self.angles[label]],
+                    self.scaled_target_ranges[label],
+                    c="#F95C0F",
+                    label="Target",
                 )
-                return {"polar": spine}
+                first = False
             else:
-                raise ValueError("Unknown value for 'frame': %s" % frame)
+                ax.plot(
+                    [self.angles[label], self.angles[label]],
+                    self.scaled_target_ranges[label],
+                    c="#F95C0F",
+                )
 
-    register_projection(RadarAxes)
-    return theta
+    def _plot_df(self, ax):
+        curr_color = 0
+        hues = self.df[self.hue_column].unique()
+        for hue in hues:
+            logger.info(f"Plotting {hue}")
+            tdf = self.df.loc[self.df[self.hue_column] == hue]
+            tdf = tdf.dropna(subset=self.value_column)
+            theta, r = [], []
+            for label in self.ordered_labels:
+                tdf_ = tdf.loc[tdf[self.label_column] == label]
+                if len(tdf_) != 0:
+                    val = tdf_[f"_scaled_{self.value_column}"].to_list()[0]
+                    theta.append(self.angles[label])
+                    r.append(val)
+            r += [r[0]]
+            theta += [theta[0]]
+            ax.plot(theta, r, c=self.colors[curr_color], marker="o", label=hue)
+            ax.fill(theta, r, facecolor=self.colors[curr_color], alpha=0.25)
+            curr_color += 1
+
+    def _add_tick_labels(self, ax):
+        ax.set_rmax(1)
+        ax.set_rticks(ticks=[0.25, 0.5, 0.75], labels=[])
+        ax.grid(True)
+        labels = [self.plot_labels[label] for label in self.ordered_labels]
+        label_angles = [
+            self.angles[label] * 180 / np.pi for label in self.ordered_labels
+        ]
+        lines, labels = plt.thetagrids(label_angles, labels)
+        angle = np.deg2rad(67.5)
+        # plot ranges for values
+        for i in range(len(self.ordered_labels)):
+            offset = 0
+            theta = label_angles[i] * np.pi / 180 + offset
+
+            r = 0.25
+            lower, upper = self.value_ranges[self.ordered_labels[i]]
+            text = round(r * upper + lower, 2)
+            plt.text(theta, r, text, fontsize=8)
+
+            r = 0.75
+            lower, upper = self.value_ranges[self.ordered_labels[i]]
+            text = round(r * upper + lower, 2)
+            plt.text(theta, r, text, fontsize=8)
 
 
 def plot(
@@ -115,183 +250,14 @@ def plot(
     hue_column: Optional[str] = None,
     value_ranges: Optional[Dict[str, List[float]]] = {},
     plot_labels: Optional[Dict[str, str]] = {},
-    target_hue: Optional[str] = None,
-    greater_than_column: Optional[str] = None,
+    target_ranges: Optional[Dict[str, List[float]]] = {},
 ) -> Tuple[Figure, Union[List[Axes], Axes]]:
-    """Creates radar plot from data in df
-
-    Args:
-        df (pd.DataFrame):
-            Dataframe contianing data to plot.
-        label_column (str):
-            Column in df corresponding to labels to plot
-        value_column (str):
-            Column in df corresponding to values to plot
-        hue_column (str):
-            Column in df corresponding to different objects that should be plotted
-            on separate lines.
-        value_ranges (Optional[Dict[str, List[float]]]):
-            Optional, if set, then values in value column corresponding to
-            the appropriate label will be normalized to fall between 0 and 1, with
-            0 being prop_ranges[prop][0] and 1 being prop_ranges[prop][1]. If it falls
-            outside those ranges, a ValueError will be raised. If not passed, or it
-            is missing for a specific label, then the min and max for the dataframe
-            will be used.
-        plot_labels (Optional[Dict[str, str]]):
-            Optional, if passed, labels on the plot will be the value of the dictionary.
-            If not passed or set for some label, then the label will be whatever it
-            already is.
-        target_hue (Optional[str]):
-            Optional, if passed, then the string represents the hue that corresponds
-            to the target values.
-        greater_than_column (Optional[str]):
-            Optional, if passed, then it is coupled with the target column to indicate
-            if the target should be greater than, or less than the value.
-
-    Returns:
-        Tuple[Figure, Union[List[Axes], Axes]
-    """
-    plot_labels = copy.deepcopy(plot_labels)
-    value_ranges = copy.deepcopy(value_ranges)
-    unique_labels = df[label_column].unique()
-    for label in unique_labels:
-        if label not in plot_labels:
-            plot_labels[label] = label
-
-        tdf = df.loc[df[label_column] == label]
-        if label not in value_ranges:
-            value_ranges[label] = [tdf[value_column].min(), tdf[value_column].max()]
-        else:
-            if tdf[value_column].min() < value_ranges[label][0]:
-                warning = (
-                    f"Value range min ({value_ranges[label][0]}) for "
-                    + f"{label} larger than min ({tdf[value_column].min()}) for the df"
-                )
-                logger.warning(warning)
-                # raise ValueError(warning)
-            if tdf[value_column].max() > value_ranges[label][1]:
-                warning = (
-                    f"Value range max ({value_ranges[label][1]}) for "
-                    + f"{label} less than max ({tdf[value_column].min()}) for the df"
-                )
-                logger.warning(warning)
-                # raise ValueError(warning)
-
-    # remove extra labels not used
-    plot_labels = {label: plot_labels[label] for label in unique_labels}
-    value_ranges = {label: value_ranges[label] for label in unique_labels}
-
-    # order labels so they are consistent when plotting
-    label_order = list(plot_labels.keys())
-    label_order.sort()
-    angles = {
-        label_order[i]: i * 2 * np.pi / len(plot_labels)
-        for i in range(len(plot_labels))
-    }
-
-    hues = list(df[hue_column].unique())
-    # Want to plot target hue first so it is below other items
-    if target_hue is not None:
-        hues.remove(target_hue)
-        hues = [target_hue] + hues
-
-    N = len(label_order)
-    theta = radar_factory(N, frame="polygon")
-    fig, ax = plt.subplots(subplot_kw=dict(projection="radar"), dpi=300)
-
-    # colors = ["#5DA192", "#0000A7"]
-    # colorblind friendly pallette
-    colors = [
-        "#332288",
-        "#117733",
-        "#44AA99",
-        "#88CCEE",
-        "#DDCC77",
-        "#CC6677",
-        "#AA4499",
-        "#882255",
-    ]
-    curr_color = 0
-    for hue in hues:
-        logger.info(f"Plotting {hue}")
-        tdf = df.loc[df[hue_column] == hue]
-        tdf = tdf.dropna(subset=value_column)
-        values = {}
-        scaled = {}
-        targets_ranges = {}
-        for index, row in tdf.iterrows():
-            scaled[row[label_column]] = (
-                row[value_column] - value_ranges[row[label_column]][0]
-            ) / value_ranges[row[label_column]][1]
-            values[row[label_column]] = row[value_column]
-            if target_hue is not None and hue == target_hue:
-                if greater_than_column is not None:
-                    if row[greater_than_column]:
-                        targets_ranges[row[label_column]] = [
-                            scaled[row[label_column]],
-                            1,
-                        ]
-                    else:
-                        targets_ranges[row[label_column]] = [
-                            0,
-                            scaled[row[label_column]],
-                        ]
-                else:
-                    targets_ranges[row[label_column]] = [
-                        scaled[row[label_column]],
-                        scaled[row[label_column]],
-                    ]
-        # Plot target if needed
-        if target_hue is not None and hue == target_hue:
-            first = True  # only want to plot label with first target
-            for label in label_order:
-                if first:
-                    ax.plot(
-                        [angles[label], angles[label]],
-                        targets_ranges[label],
-                        c="#F95C0F",
-                        label="Target",
-                    )
-                    first = False
-                else:
-                    ax.plot(
-                        [angles[label], angles[label]],
-                        targets_ranges[label],
-                        c="#F95C0F",
-                    )
-        # Plot everything else
-        else:
-            theta, r = [], []
-            for label in label_order:
-                if label in scaled:
-                    theta.append(angles[label])
-                    r.append(scaled[label])
-            r += [r[0]]
-            theta += [theta[0]]
-            ax.plot(theta, r, c=colors[curr_color], marker="o", label=hue)
-            ax.fill(theta, r, facecolor=colors[curr_color], alpha=0.25)
-            curr_color += 1
-
-    ax.set_rmax(1)
-    ax.set_rticks(ticks=[0.25, 0.5, 0.75], labels=[])
-    ax.grid(True)
-    labels = [plot_labels[label] for label in label_order]
-    label_angles = [angles[label] * 180 / np.pi for label in label_order]
-    lines, labels = plt.thetagrids(label_angles, labels)
-    angle = np.deg2rad(67.5)
-    # plot ranges for values
-    for i in range(len(label_order)):
-        offset = 0
-        theta = label_angles[i] * np.pi / 180 + offset
-
-        r = 0.25
-        lower, upper = value_ranges[label_order[i]]
-        text = round(r * upper + lower, 2)
-        plt.text(theta, r, text, fontsize=8)
-
-        r = 0.75
-        lower, upper = value_ranges[label_order[i]]
-        text = round(r * upper + lower, 2)
-        plt.text(theta, r, text, fontsize=8)
-
-    return (fig, ax)
+    return RadarPlot(
+        df,
+        label_column,
+        value_column,
+        hue_column,
+        value_ranges,
+        plot_labels,
+        target_ranges,
+    ).plot()

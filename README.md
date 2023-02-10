@@ -29,8 +29,8 @@ with different values for the properties, then format the data like this:
 | prop2    | 2     | item3 |
 | prop3    | 40    | item3 |
 
-### Basic Usage
-Following that formatting scheme, you can plot the data as follows
+## Basic Usage
+Following [that formatting scheme](#data-formatting), you can plot the data as follows
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -120,20 +120,45 @@ plt.show()
 Resulting in the following image
 ![example 3 plotted](images/example_3.png)
 
-## Usage
+### Plotting property ranges
+If you want to see if your items' values fall within a certain range, you 
+can add those ranges as well
 ```Python
 import pandas as pd
 import matplotlib.pyplot as plt
 from pinrex import radar_plot
 
+target_ranges = {
+  "prop1": [10, 20],
+  "prop2": [0, 2],
+  "prop3": [25, 35]
+}
+
+value_ranges = {
+  "prop1": [0, 20],
+  "prop2": [0, 5],
+  "prop3": [0, 50],
+}
+
+plot_labels = {
+  "prop1": "$\sigma^{2}$",
+  "prop2": "Property 2 (seconds)",
+  "prop3": "p3"
+}
+
+# see tables above
+df = pd.read_csv('example_data.csv')
 fig, ax = radar_plot.plot(
-    tdf,
-    label_column="Property",
-    value_column="Value",
-    hue_column="Application",
-    value_ranges=props,
-    plot_labels=prop_labels,
-    target_hue=application,
-    greater_than_column="Greater_Than",
+    df,
+    label_column="property",
+    value_column="value",
+    hue_column="item",
+    value_ranges=value_ranges,
+    plot_labels=plot_labels,
 )
+plt.legend()
+plt.show()
 ```
+
+Resulting in the following image
+![example 4 plotted](images/example_4.png)

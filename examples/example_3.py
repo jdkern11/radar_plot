@@ -5,19 +5,15 @@ import matplotlib.pyplot as plt
 from pinrex import radar_plot
 
 value_ranges = {
-  "prop1": [0, 20],
-  "prop2": [0, 5],
-  "prop3": [0, 50],
+    "prop1": [0, 20],
+    "prop2": [0, 5],
+    "prop3": [0, 50],
 }
 
-plot_labels = {
-  "prop1": "$\sigma^{2}$",
-  "prop2": "Property 2 (seconds)",
-  "prop3": "p3"
-}
+plot_labels = {"prop1": "$\sigma^{2}$", "prop2": "Property 2 (seconds)", "prop3": "p3"}
 
 # see tables above
-df = pd.read_csv('example_data.csv')
+df = pd.read_csv("example_data.csv")
 fig, ax = radar_plot.plot(
     df,
     label_column="property",
@@ -27,7 +23,8 @@ fig, ax = radar_plot.plot(
     plot_labels=plot_labels,
 )
 
-folder = Path.cwd() / '..' / 'images'
-save = str(folder / 'example_3.png')
+folder = Path.cwd() / ".." / "images"
+save = str(folder / "example_3.png")
+legend = ax.legend(loc=(0.9, 0.95))
+plt.tight_layout()
 plt.savefig(save)
-

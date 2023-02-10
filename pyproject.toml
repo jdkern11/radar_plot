@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pinrex.radar_plot"
-version = "0.1.0"
+version = "1.0.0"
 description = ""
 authors = ["jdkern11 <leolion29@gmail.com>"]
 readme = "README.md"
