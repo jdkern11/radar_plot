@@ -16,11 +16,11 @@ three properties (let's say prop1, prop2, and prop3 with values
 12, 3.5, and 42 respectively) then you should load a csv file into a pandas 
 dataframe that has the following format:
 
-| property | value |
-| -------- | ----- |
-| prop1    | 12.0  |
-| prop2    | 3.5   |
-| prop3    | 42    |
+| property | value | item  |
+| -------- | ----- | ----- |
+| prop1    | 12.0  | item1 |
+| prop2    | 3.5   | item1 |
+| prop3    | 42    | item1 |
 
 If you wanted to plot several items (e.g., item1, item2, and item3)
 with different values for the properties, then format the data like this:
