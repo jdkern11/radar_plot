@@ -8,7 +8,7 @@ plot ranges of values.
 - [Chaning labels](#changing-labels)
 - [Plotting target ranges](#plotting-target-ranges)
 
-![example 0](images/example_0.png)
+![example 0](https://raw.githubusercontent.com/jdkern11/radar_plot/main/images/example_0.png)
 
 ## Data formatting
 Data you want to plot must have a tidy format. For instance, if I wanted to plot
@@ -57,7 +57,7 @@ plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
-![example 1 plotted](images/example_1.png)
+![example 1 plotted](https://raw.githubusercontent.com/jdkern11/radar_plot/main/images/example_1.png)
 
 Additional lines are plotted at the .25, .50, and .75 marks on the image. The value at the
 .25 and .75 line for each property is labeled and values increase/decrease linearly
@@ -94,7 +94,7 @@ plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
-![example 2 plotted](images/example_2.png)
+![example 2 plotted](https://raw.githubusercontent.com/jdkern11/radar_plot/main/images/example_2.png)
 
 ### Changing labels
 If you don't want the labels for the properties to be the property names, 
@@ -132,7 +132,7 @@ plt.tight_layout()
 plt.show()
 ```
 Resulting in the following image
-![example 3 plotted](images/example_3.png)
+![example 3 plotted](https://raw.githubusercontent.com/jdkern11/radar_plot/main/images/example_3.png)
 
 ### Plotting target ranges
 If you want to see if your items' values fall within a certain range, you 
@@ -176,4 +176,4 @@ plt.show()
 ```
 
 Resulting in the following image
-![example 4 plotted](images/example_4.png)
+![example 4 plotted](https://raw.githubusercontent.com/jdkern11/radar_plot/main/images/example_4.png)
