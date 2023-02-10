@@ -29,7 +29,7 @@ with different values for the properties, then format the data like this:
 | prop2    | 2     | item3 |
 | prop3    | 40    | item3 |
 
-### Usage
+### Basic Usage
 Following that formatting scheme, you can plot the data as follows
 ```Python
 import pandas as pd
@@ -54,8 +54,10 @@ Additional lines are plotted at the .25, .50, and .75 marks on the image. The va
 between these points. For instance, the 0.5 mark for property 2 would be 4, the 1 
 mark would be 6 and the 0 mark would be 2.
 
-Let's say you don't like that the properties don't range from 0 to some value. To change
-these value ranges create a dictionary of the ranges you want for each property.
+### Changing Ranges 
+Let's say you don't like that the prop2 ranges from 1 to 6. To change
+these value ranges create a dictionary of the ranges you want for each property and 
+pass it to the function via the `value_ranges` parameter.
 For instance: 
 ```Python
 import pandas as pd
@@ -81,6 +83,42 @@ plt.show()
 ```
 Resulting in the following image
 ![example 2 plotted](images/example_2.png)
+
+### Changing labels
+If you don't want the labels for the properties to be the property names, 
+you can change those as well with the `plot_labels` parameter.
+
+```Python
+import pandas as pd
+import matplotlib.pyplot as plt
+from pinrex import radar_plot
+
+value_ranges = {
+  "prop1": [0, 20],
+  "prop2": [0, 5],
+  "prop3": [0, 50],
+}
+
+plot_labels = {
+  "prop1": "$\sigma^{2}$",
+  "prop2": "Property 2 (seconds)",
+  "prop3": "p3"
+}
+
+# see tables above
+df = pd.read_csv('example_data.csv')
+fig, ax = radar_plot.plot(
+    df,
+    label_column="property",
+    value_column="value",
+    hue_column="item",
+    value_ranges=value_ranges,
+    plot_labels=plot_labels,
+)
+plt.show()
+```
+Resulting in the following image
+![example 3 plotted](images/example_3.png)
 
 ## Usage
 ```Python
