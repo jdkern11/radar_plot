@@ -2,6 +2,7 @@
 **/*log
 **/*.pyc
 **/*.swp
-**/*.png
+data/*.png
 **/*.csv
 **/*.pkl
+data/

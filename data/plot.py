@@ -84,6 +84,10 @@ df = pd.DataFrame(rows)
 df = pd.concat([screening, df, polymers])
 for polymer in polymers.Application.unique():
     for application in screening.Application.unique():
+        # if 'Insulation' in application or 'Cups' in application:
+        #     polymer = 'PS'
+        # elif 'Shrink' in application:
+        #     polymer = 'PVC'
         tdf = df.loc[df.Application.isin([application, polymer])]
         tdf = tdf.loc[
             tdf.Property.isin(
@@ -103,8 +107,8 @@ for polymer in polymers.Application.unique():
             greater_than_column="Greater_Than",
         )
         plt.tight_layout()
-        save_name = f"{application}_{polymer}"
-        fig.savefig(f"{save_name}.png", dpi=300)
+        save_name = f"images/{application}_{polymer}"
+        fig.savefig(f"{save_name}.png", dpi=300, bbox_inches="tight")
         legend = ax.legend(loc=(0.9, .95))
         fig = legend.figure
         fig.canvas.draw()
@@ -112,4 +116,3 @@ for polymer in polymers.Application.unique():
         ax.axis('off')
         fig.savefig(f"{save_name}_legend.png", dpi=300, bbox_inches=bbox)
         plt.close("all")
-        exit()

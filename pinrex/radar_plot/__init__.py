@@ -16,7 +16,8 @@ from matplotlib.transforms import Affine2D
 
 logger = logging.getLogger(__name__)
 
-def radar_factory(num_vars, frame='circle'):
+
+def radar_factory(num_vars, frame="circle"):
     """
     Create a radar chart with `num_vars` axes.
 
@@ -31,10 +32,9 @@ def radar_factory(num_vars, frame='circle'):
 
     """
     # calculate evenly-spaced axis angles
-    theta = np.linspace(0, 2*np.pi, num_vars, endpoint=False)
+    theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
 
     class RadarTransform(PolarAxes.PolarTransform):
-
         def transform_path_non_affine(self, path):
             # Paths with non-unit interpolation steps correspond to gridlines,
             # in which case we force interpolation (to defeat PolarTransform's
@@ -45,13 +45,13 @@ def radar_factory(num_vars, frame='circle'):
 
     class RadarAxes(PolarAxes):
 
-        name = 'radar'
+        name = "radar"
         PolarTransform = RadarTransform
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             # rotate plot such that the first axis is at the top
-            self.set_theta_zero_location('N')
+            self.set_theta_zero_location("N")
 
         def fill(self, *args, closed=True, **kwargs):
             """Override fill so that line is closed by default"""
@@ -77,33 +77,36 @@ def radar_factory(num_vars, frame='circle'):
         def _gen_axes_patch(self):
             # The Axes patch must be centered at (0.5, 0.5) and of radius 0.5
             # in axes coordinates.
-            if frame == 'circle':
+            if frame == "circle":
                 return Circle((0.5, 0.5), 0.5)
-            elif frame == 'polygon':
-                return RegularPolygon((0.5, 0.5), num_vars,
-                                      radius=.5, edgecolor="k")
+            elif frame == "polygon":
+                return RegularPolygon((0.5, 0.5), num_vars, radius=0.5, edgecolor="k")
             else:
                 raise ValueError("Unknown value for 'frame': %s" % frame)
 
         def _gen_axes_spines(self):
-            if frame == 'circle':
+            if frame == "circle":
                 return super()._gen_axes_spines()
-            elif frame == 'polygon':
+            elif frame == "polygon":
                 # spine_type must be 'left'/'right'/'top'/'bottom'/'circle'.
-                spine = Spine(axes=self,
-                              spine_type='circle',
-                              path=Path.unit_regular_polygon(num_vars))
+                spine = Spine(
+                    axes=self,
+                    spine_type="circle",
+                    path=Path.unit_regular_polygon(num_vars),
+                )
                 # unit_regular_polygon gives a polygon of radius 1 centered at
                 # (0, 0) but we want a polygon of radius 0.5 centered at (0.5,
                 # 0.5) in axes coordinates.
-                spine.set_transform(Affine2D().scale(.5).translate(.5, .5)
-                                    + self.transAxes)
-                return {'polar': spine}
+                spine.set_transform(
+                    Affine2D().scale(0.5).translate(0.5, 0.5) + self.transAxes
+                )
+                return {"polar": spine}
             else:
                 raise ValueError("Unknown value for 'frame': %s" % frame)
 
     register_projection(RadarAxes)
     return theta
+
 
 def plot(
     df: pd.DataFrame,
@@ -193,15 +196,26 @@ def plot(
         hues = [target_hue] + hues
 
     N = len(label_order)
-    theta = radar_factory(N, frame='polygon')
-    fig, ax = plt.subplots(subplot_kw=dict(projection='radar'), dpi=300)
+    theta = radar_factory(N, frame="polygon")
+    fig, ax = plt.subplots(subplot_kw=dict(projection="radar"), dpi=300)
 
-    colors = ["#5DA192", "#0000A7"]
+    # colors = ["#5DA192", "#0000A7"]
+    # colorblind friendly pallette
+    colors = [
+        "#332288",
+        "#117733",
+        "#44AA99",
+        "#88CCEE",
+        "#DDCC77",
+        "#CC6677",
+        "#AA4499",
+        "#882255",
+    ]
     curr_color = 0
     for hue in hues:
         logger.info(f"Plotting {hue}")
         tdf = df.loc[df[hue_column] == hue]
-        tdf.dropna(subset=value_column, inplace=True)
+        tdf = tdf.dropna(subset=value_column)
         values = {}
         scaled = {}
         targets_ranges = {}
