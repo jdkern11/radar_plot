@@ -28,6 +28,6 @@ fig, ax = radar_plot.plot(
 )
 
 folder = Path.cwd() / '..' / 'images'
-save = str(folder / 'example_2.png')
+save = str(folder / 'example_3.png')
 plt.savefig(save)
 
