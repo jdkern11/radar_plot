@@ -2,6 +2,7 @@
 This package creates radar plots. It can generate typical radar plots and 
 plot ranges of values.
 
+- [Data formatting](#data-formatting)
 - [Basic usage](#basic-usage)
 - [Chaning ranges](#changing-ranges)
 - [Chaning labels](#changing-labels)
