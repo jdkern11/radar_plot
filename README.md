@@ -7,6 +7,8 @@ plot ranges of values.
 - [Chaning labels](#changing-labels)
 - [Plotting target ranges](#plotting-target-ranges)
 
+![example 0](images/example_0.png)
+
 ## Data formatting
 Data you want to plot must have a tidy format. For instance, if I wanted to plot
 three properties (let's say prop1, prop2, and prop3 with values 
