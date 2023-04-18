@@ -234,12 +234,12 @@ class RadarPlot:
 
             r = 0.25
             lower, upper = self.value_ranges[self.ordered_labels[i]]
-            text = round(r * upper + lower, 2)
+            text = round(r * (upper - lower) + lower, 2)
             plt.text(theta, r, text, fontsize=8)
 
             r = 0.75
             lower, upper = self.value_ranges[self.ordered_labels[i]]
-            text = round(r * upper + lower, 2)
+            text = round(r * (upper - lower) + lower, 2)
             plt.text(theta, r, text, fontsize=8)
 
 
