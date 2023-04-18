@@ -169,6 +169,7 @@ fig, ax = radarplt.plot(
     hue_column="item",
     value_ranges=value_ranges,
     plot_labels=plot_labels,
+    target_ranges=target_ranges
 )
 legend = ax.legend(loc=(0.9, 0.95))
 plt.tight_layout()
