@@ -35,6 +35,7 @@ class RadarPlot:
             "#AA4499",
             "#882255",
         ],
+        figsize: Optional[Tuple[float]] = (6.4, 4.8),
     ):
         """Creates radar plot from data in df
 
@@ -64,6 +65,8 @@ class RadarPlot:
                 property it is defined for.
             colors:
                 Colors to plot each item.
+            figsize:
+                Size of figure to plot
         """
         self.df = df.copy()
         self.label_column = label_column
@@ -76,6 +79,7 @@ class RadarPlot:
         self.theta = radar_factory(len(self.ordered_labels), frame="polygon")
         self._add_scaled_value_column_to_df()
         self.scaled_target_ranges = self._scale_target_ranges()
+        self.figsize = figsize
 
     @cached_property
     def ordered_labels(self):
@@ -170,7 +174,9 @@ class RadarPlot:
         return scaled_ranges
 
     def plot(self) -> Tuple[Figure, Union[List[Axes], Axes]]:
-        fig, ax = plt.subplots(subplot_kw=dict(projection="radar"), dpi=300)
+        fig, ax = plt.subplots(
+            subplot_kw=dict(projection="radar"), dpi=300, figsize=self.figsize
+        )
         self._plot_target_ranges(ax)
         self._plot_df(ax)
         self._add_tick_labels(ax)
@@ -251,6 +257,7 @@ def plot(
     value_ranges: Optional[Dict[str, List[float]]] = {},
     plot_labels: Optional[Dict[str, str]] = {},
     target_ranges: Optional[Dict[str, List[float]]] = {},
+    figsize: Optional[Tuple[float]] = (6.4, 4.8)
 ) -> Tuple[Figure, Union[List[Axes], Axes]]:
     return RadarPlot(
         df,
@@ -260,4 +267,5 @@ def plot(
         value_ranges,
         plot_labels,
         target_ranges,
+        figsize=figsize
     ).plot()
