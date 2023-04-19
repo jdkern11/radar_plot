@@ -179,7 +179,7 @@ class RadarPlot:
         )
         self._plot_target_ranges(ax)
         self._plot_df(ax)
-        self._add_tick_labels(ax)
+        self._add_tick_labels(fig, ax)
 
         return (fig, ax)
 
@@ -223,7 +223,7 @@ class RadarPlot:
             ax.fill(theta, r, facecolor=self.colors[curr_color], alpha=0.25)
             curr_color += 1
 
-    def _add_tick_labels(self, ax):
+    def _add_tick_labels(self, fig, ax):
         ax.set_rmax(1)
         ax.set_rticks(ticks=[0.25, 0.5, 0.75], labels=[])
         ax.grid(True)
@@ -231,22 +231,47 @@ class RadarPlot:
         label_angles = [
             self.angles[label] * 180 / np.pi for label in self.ordered_labels
         ]
+
+        # rotation reset to 0 for polar coordinates, so we'll remove all xticks and
+        # just use the coordinates we get when we run thetagrids
         lines, labels = plt.thetagrids(label_angles, labels)
-        angle = np.deg2rad(67.5)
+        ax.set_xticks([])
+        n_labels = []
+        for i in range(len(labels)):
+            label = labels[i]
+            x, y = label.get_position()
+            lab = ax.text(
+                x,
+                y,
+                label.get_text(),
+                transform=label.get_transform(),
+                ha=label.get_ha(),
+                va=label.get_va(),
+            )
+            lab.set_rotation(label_angles[i])
+            n_labels.append(lab)
+        labels = n_labels
+
         # plot ranges for values
         for i in range(len(self.ordered_labels)):
-            offset = 0
-            theta = label_angles[i] * np.pi / 180 + offset
+            label = labels[i]
+            theta = label_angles[i] * np.pi / 180
 
             r = 0.25
             lower, upper = self.value_ranges[self.ordered_labels[i]]
             text = round(r * (upper - lower) + lower, 2)
-            plt.text(theta, r, text, fontsize=8)
+            t = ax.text(
+                theta + 0.2, r, text, fontsize=8, ha=label.get_ha(), va=label.get_va()
+            )
+            t.set_rotation(label_angles[i] + 90)
 
             r = 0.75
             lower, upper = self.value_ranges[self.ordered_labels[i]]
             text = round(r * (upper - lower) + lower, 2)
-            plt.text(theta, r, text, fontsize=8)
+            t = ax.text(
+                theta + 0.07, r, text, fontsize=8, ha=label.get_ha(), va=label.get_va()
+            )
+            t.set_rotation(label_angles[i] + 90)
 
 
 def plot(
@@ -257,7 +282,7 @@ def plot(
     value_ranges: Optional[Dict[str, List[float]]] = {},
     plot_labels: Optional[Dict[str, str]] = {},
     target_ranges: Optional[Dict[str, List[float]]] = {},
-    figsize: Optional[Tuple[float]] = (6.4, 4.8)
+    figsize: Optional[Tuple[float]] = (6.4, 4.8),
 ) -> Tuple[Figure, Union[List[Axes], Axes]]:
     return RadarPlot(
         df,
@@ -267,5 +292,5 @@ def plot(
         value_ranges,
         plot_labels,
         target_ranges,
-        figsize=figsize
+        figsize=figsize,
     ).plot()
