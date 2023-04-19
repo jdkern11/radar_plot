@@ -235,7 +235,6 @@ class RadarPlot:
         # rotation reset to 0 for polar coordinates, so we'll remove all xticks and
         # just use the coordinates we get when we run thetagrids
         lines, labels = plt.thetagrids(label_angles, labels)
-        ax.set_xticks([])
         n_labels = []
         for i in range(len(labels)):
             label = labels[i]
@@ -250,6 +249,8 @@ class RadarPlot:
             )
             lab.set_rotation(label_angles[i])
             n_labels.append(lab)
+        # don't want to remove the ticks, just the label text
+        ax.set_xticklabels(["" for label in labels])
         labels = n_labels
 
         # plot ranges for values
