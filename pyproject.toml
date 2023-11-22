@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "radarplt"
-version = "2.2.0"
+version = "2.2.1"
 description = ""
 authors = ["jdkern11 <josephdanielkern@gmail.com>"]
 readme = "README.md"
@@ -8,7 +8,7 @@ packages = [{include = "radarplt"}]
 repository = "https://github.com/jdkern11/radar_plot.git"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9,<3.13"
 pandas = "^1.4.4"
 matplotlib = "^3.6.3"
 
