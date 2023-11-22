@@ -126,6 +126,8 @@ fig, ax = radarplt.plot(
     hue_column="item",
     value_ranges=value_ranges,
     plot_labels=plot_labels,
+    # can change fontsize of the numbers in the plot
+    tick_fontsize=12
 )
 legend = ax.legend(loc=(0.9, 0.95))
 plt.tight_layout()

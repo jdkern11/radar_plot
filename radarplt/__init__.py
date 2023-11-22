@@ -36,7 +36,8 @@ class RadarPlot:
             "#882255",
         ],
         figsize: Optional[Tuple[float]] = (6.4, 4.8),
-        target_linewidth: Optional[float] = 1
+        target_linewidth: Optional[float] = 1,
+        tick_fontsize: Optional[float] = 8,
     ):
         """Creates radar plot from data in df
 
@@ -68,6 +69,10 @@ class RadarPlot:
                 Colors to plot each item.
             figsize:
                 Size of figure to plot
+            target_linewidth:
+                Width of target line
+            tick_fontsize:
+                Fontsize of numbers in the plot
         """
         self.df = df.copy()
         self.label_column = label_column
@@ -82,6 +87,7 @@ class RadarPlot:
         self.scaled_target_ranges = self._scale_target_ranges()
         self.figsize = figsize
         self.target_linewidth = target_linewidth
+        self.tick_fontsize = tick_fontsize
 
     @cached_property
     def ordered_labels(self):
@@ -196,7 +202,7 @@ class RadarPlot:
                     self.scaled_target_ranges[label],
                     c="#F95C0F",
                     label="Target",
-                    linewidth=self.target_linewidth
+                    linewidth=self.target_linewidth,
                 )
                 first = False
             else:
@@ -204,7 +210,7 @@ class RadarPlot:
                     [self.angles[label], self.angles[label]],
                     self.scaled_target_ranges[label],
                     c="#F95C0F",
-                    linewidth=self.target_linewidth
+                    linewidth=self.target_linewidth,
                 )
 
     def _plot_df(self, ax):
@@ -266,7 +272,12 @@ class RadarPlot:
             lower, upper = self.value_ranges[self.ordered_labels[i]]
             text = round(r * (upper - lower) + lower, 2)
             t = ax.text(
-                theta + 0.2, r, text, fontsize=8, ha=label.get_ha(), va=label.get_va()
+                theta + 0.2,
+                r,
+                text,
+                fontsize=self.tick_fontsize,
+                ha=label.get_ha(),
+                va=label.get_va(),
             )
             t.set_rotation(label_angles[i] + 90)
 
@@ -274,7 +285,12 @@ class RadarPlot:
             lower, upper = self.value_ranges[self.ordered_labels[i]]
             text = round(r * (upper - lower) + lower, 2)
             t = ax.text(
-                theta + 0.07, r, text, fontsize=8, ha=label.get_ha(), va=label.get_va()
+                theta + 0.07,
+                r,
+                text,
+                fontsize=self.tick_fontsize,
+                ha=label.get_ha(),
+                va=label.get_va(),
             )
             t.set_rotation(label_angles[i] + 90)
 
@@ -288,7 +304,8 @@ def plot(
     plot_labels: Optional[Dict[str, str]] = {},
     target_ranges: Optional[Dict[str, List[float]]] = {},
     figsize: Optional[Tuple[float]] = (6.4, 4.8),
-    target_linewidth: Optional[float] = 1
+    target_linewidth: Optional[float] = 1,
+    tick_fontsize: Optional[float] = 8,
 ) -> Tuple[Figure, Union[List[Axes], Axes]]:
     return RadarPlot(
         df,
@@ -299,5 +316,6 @@ def plot(
         plot_labels,
         target_ranges,
         figsize=figsize,
-        target_linewidth=target_linewidth
+        target_linewidth=target_linewidth,
+        tick_fontsize=tick_fontsize,
     ).plot()
