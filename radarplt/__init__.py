@@ -36,6 +36,7 @@ class RadarPlot:
             "#882255",
         ],
         figsize: Optional[Tuple[float]] = (6.4, 4.8),
+        target_linewidth: Optional[float] = 1
     ):
         """Creates radar plot from data in df
 
@@ -80,6 +81,7 @@ class RadarPlot:
         self._add_scaled_value_column_to_df()
         self.scaled_target_ranges = self._scale_target_ranges()
         self.figsize = figsize
+        self.target_linewidth = target_linewidth
 
     @cached_property
     def ordered_labels(self):
@@ -194,6 +196,7 @@ class RadarPlot:
                     self.scaled_target_ranges[label],
                     c="#F95C0F",
                     label="Target",
+                    linewidth=self.target_linewidth
                 )
                 first = False
             else:
@@ -201,6 +204,7 @@ class RadarPlot:
                     [self.angles[label], self.angles[label]],
                     self.scaled_target_ranges[label],
                     c="#F95C0F",
+                    linewidth=self.target_linewidth
                 )
 
     def _plot_df(self, ax):
@@ -284,6 +288,7 @@ def plot(
     plot_labels: Optional[Dict[str, str]] = {},
     target_ranges: Optional[Dict[str, List[float]]] = {},
     figsize: Optional[Tuple[float]] = (6.4, 4.8),
+    target_linewidth: Optional[float] = 1
 ) -> Tuple[Figure, Union[List[Axes], Axes]]:
     return RadarPlot(
         df,
@@ -294,4 +299,5 @@ def plot(
         plot_labels,
         target_ranges,
         figsize=figsize,
+        target_linewidth=target_linewidth
     ).plot()

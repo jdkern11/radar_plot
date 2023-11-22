@@ -24,6 +24,8 @@ fig, ax = radarplt.plot(
     value_ranges=value_ranges,
     plot_labels=plot_labels,
     target_ranges=target_ranges,
+    # can also change linewidth, default is 1 
+    target_linewidth=1
 )
 folder = Path.cwd() / ".." / "images"
 save = str(folder / "example_4.png")
